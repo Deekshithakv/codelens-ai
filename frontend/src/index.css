@@ -1,5 +1,33 @@
 @import "tailwindcss";
 
+:root {
+  --color-ink: #17191c;
+  --color-white: #ffffff;
+  --color-fog: #f7f7f8;
+  --color-ash: #4c4c4c;
+  --color-graphite: #777b86;
+  --color-dove: #a3a6af;
+  --color-rust: #5d2a1a;
+  --color-apricot: #fbe1d1;
+  --color-sky: #d3e3fc;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Baskerville, Georgia,
+    serif;
+  --font-body: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+  --shadow-card:
+    rgba(4, 23, 43, 0.05) 0 0 0 1px,
+    rgba(0, 0, 0, 0.1) 0 20px 25px -5px,
+    rgba(0, 0, 0, 0.08) 0 8px 10px -6px;
+  color: var(--color-ink);
+  background: var(--color-white);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body,
 #root {
@@ -10,12 +38,112 @@ body,
 }
 
 body {
-  background: #020617;
-  color: white;
-  font-family: Inter, system-ui, sans-serif;
+  min-width: 320px;
   overflow-x: hidden;
+  background: var(--color-white);
+  color: var(--color-ink);
+  letter-spacing: -0.009em;
 }
 
 * {
   box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-apricot);
+  color: var(--color-rust);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+.card-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.soft-card {
+  border-radius: 24px;
+  background: var(--color-white);
+  box-shadow: var(--shadow-card);
+}
+
+.hero-dawn {
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(251, 225, 209, 0.98) 0%,
+      rgba(251, 225, 209, 0.52) 27%,
+      rgba(255, 255, 255, 0) 62%
+    ),
+    #ffffff;
+}
+
+.dot-grid {
+  background-image: radial-gradient(
+    circle,
+    rgba(23, 25, 28, 0.11) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+
+.editor-shell .monaco-editor,
+.editor-shell .monaco-editor-background,
+.editor-shell .monaco-editor .margin {
+  background-color: #fbfbfc !important;
+}
+
+.editor-shell .monaco-editor .scroll-decoration {
+  box-shadow: none !important;
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(480px);
+    opacity: 0;
+  }
+}
+
+.scan-line {
+  animation: scan-line 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

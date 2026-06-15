@@ -1,9 +1,10 @@
 # backend/main.py
 # FastAPI server with one main endpoint: POST /analyze
-# Returns a Server-Sent Events (SSE) stream with 3 channels:
+# Returns a Server-Sent Events (SSE) stream with analysis channels:
 #   - "explain"    → line-by-line explanation tokens
-#   - "complexity" → Big-O analysis tokens  
+#   - "complexity" → Big-O analysis tokens
 #   - "security"   → vulnerability warning tokens
+#   - "bugs"       → functional bug finding tokens
 #   - "done"       → signals all streams finished
 
 from fastapi import FastAPI, Request
@@ -16,6 +17,7 @@ from analyzer import (
     stream_explanation,
     stream_complexity,
     stream_security,
+    stream_bugs,
     detect_language
 )
 
@@ -55,10 +57,11 @@ async def analyze_code(request: Request):
     How it works:
     1. Reads code and language from request body
     2. Auto-detects language if "auto" is selected
-    3. Starts 3 background threads simultaneously:
+    3. Starts 4 background threads simultaneously:
            Thread 1 → stream_explanation() → pushes to queue with channel="explain"
            Thread 2 → stream_complexity()  → pushes to queue with channel="complexity"
            Thread 3 → stream_security()    → pushes to queue with channel="security"
+           Thread 4 → stream_bugs()        → pushes to queue with channel="bugs"
     4. event_generator() reads from the shared queue and formats each
        token as an SSE event: data: {"channel": "explain", "token": "..."}\n\n
     5. React frontend reads the SSE stream, checks channel field,
@@ -66,7 +69,7 @@ async def analyze_code(request: Request):
     
     Why threads instead of async?
     Groq's Python SDK uses synchronous iteration for streaming.
-    Running 3 sync generators in threads lets them all run in parallel
+    Running the sync generators in threads lets them all run in parallel
     without blocking each other, feeding into one shared queue.
     """
     body = await request.json()
@@ -80,7 +83,7 @@ async def analyze_code(request: Request):
     if language == "auto" or not language:
         language = detect_language(code)
 
-    # Shared queue — all 3 threads push (channel, token) pairs here
+    # Shared queue — all analysis threads push (channel, token) pairs here
     # Main thread reads from this queue and streams to frontend
     token_queue = queue.Queue()
 
@@ -102,24 +105,20 @@ async def analyze_code(request: Request):
             # Sentinel value — None means this stream is done
             token_queue.put((channel, None))
 
-    # Start all 3 analysis threads at the same time
-    # This is why all 3 panels start streaming simultaneously
+    # Start all analyses together so every panel streams independently.
+    analyses = [
+        (stream_explanation, "explain"),
+        (stream_complexity, "complexity"),
+        (stream_security, "security"),
+        (stream_bugs, "bugs"),
+    ]
     threads = [
         threading.Thread(
             target=run_stream,
-            args=(stream_explanation, "explain"),
+            args=(stream_fn, channel),
             daemon=True
-        ),
-        threading.Thread(
-            target=run_stream,
-            args=(stream_complexity, "complexity"),
-            daemon=True
-        ),
-        threading.Thread(
-            target=run_stream,
-            args=(stream_security, "security"),
-            daemon=True
-        ),
+        )
+        for stream_fn, channel in analyses
     ]
 
     for t in threads:
@@ -135,12 +134,12 @@ async def analyze_code(request: Request):
         The double newline \n\n is required by the SSE protocol —
         it tells the browser this event is complete.
         
-        Keeps running until all 3 streams send their None sentinel.
+        Keeps running until every stream sends its None sentinel.
         Times out after 60 seconds to prevent hanging connections.
         """
         finished_channels = set()
 
-        while len(finished_channels) < 3:
+        while len(finished_channels) < len(analyses):
             try:
                 # Wait up to 60 seconds for next token
                 channel, token = token_queue.get(timeout=60)

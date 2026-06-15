@@ -10,6 +10,7 @@ from prompts import (
     build_explain_prompt,
     build_complexity_prompt,
     build_security_prompt,
+    build_bug_prompt,
     build_detect_language_prompt
 )
 
@@ -116,6 +117,40 @@ def stream_security(code: str, language: str):
         ],
         stream=True,
         max_tokens=600,
+        temperature=0.1
+    )
+
+    for chunk in stream:
+        token = chunk.choices[0].delta.content
+        if token:
+            yield token
+
+
+def stream_bugs(code: str, language: str):
+    """
+    Streams likely runtime, logic, and edge-case defects.
+
+    Findings use a pipe-separated format so the frontend can turn completed
+    lines into severity-aware cards while tokens are streaming.
+    """
+    stream = client.chat.completions.create(
+        model=MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a senior software engineer reviewing code for "
+                    "functional bugs. Be precise, avoid style feedback and "
+                    "false positives, and follow the requested output format."
+                )
+            },
+            {
+                "role": "user",
+                "content": build_bug_prompt(code, language)
+            }
+        ],
+        stream=True,
+        max_tokens=900,
         temperature=0.1
     )
 

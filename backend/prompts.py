@@ -120,6 +120,57 @@ Security scan results:
 """
 
 
+def build_bug_prompt(code: str, language: str) -> str:
+    """
+    Prompt for likely runtime and logic bug detection.
+    Each finding stays on one line so the frontend can parse it.
+    """
+    return f"""You are a senior software engineer performing a focused bug review.
+
+Analyze this {language} code for defects that can cause incorrect behavior.
+
+CHECK FOR:
+- Runtime errors and unhandled exceptions
+- Incorrect conditions, calculations, or return values
+- Off-by-one, index, boundary, and empty-input mistakes
+- Null, undefined, type, and state handling errors
+- Infinite loops, unreachable code, and broken control flow
+- Resource leaks, race conditions, and unsafe async behavior
+- Incorrect API or standard-library usage
+- Edge cases that produce wrong results
+
+OUTPUT FORMAT:
+
+BUG | HIGH | LINE X | <category> | <short bug title> | WHY: <failure scenario> | FIX: <specific correction>
+
+BUG | MEDIUM | LINE X | <category> | <short bug title> | WHY: <failure scenario> | FIX: <specific correction>
+
+BUG | LOW | LINE X | <category> | <short bug title> | WHY: <failure scenario> | FIX: <specific correction>
+
+RULES:
+- Put every finding on exactly one line
+- Use HIGH when the code can crash, corrupt data, or consistently return a seriously wrong result
+- Use MEDIUM for defects triggered by realistic inputs or states
+- Use LOW for limited edge-case defects
+- Use the exact source line number when possible; use LINE N/A only for a whole-program issue
+- Report likely functional bugs, not style preferences or security vulnerabilities
+- Do not invent missing requirements
+- Do not repeat the same root cause
+- No markdown
+- No introduction or extra commentary
+
+If no likely bugs exist, output exactly:
+
+NO_BUGS | No likely functional bugs detected.
+
+CODE ({language}):
+
+{code}
+
+Bug review results:
+"""
+
+
 def build_detect_language_prompt(code: str) -> str:
     """
     Auto-detect programming language.

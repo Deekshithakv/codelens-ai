@@ -1,56 +1,42 @@
+import { Braces } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
-return ( <footer className="border-t border-slate-800 mt-20">
+  return (
+    <footer className="border-t border-black/5 bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-12 xl:px-0">
+        <div className="flex flex-col justify-between gap-8 md:flex-row md:items-center">
+          <div>
+            <Link to="/" className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#17191c] text-white">
+                <Braces size={18} strokeWidth={1.8} />
+              </span>
+              <span className="text-[18px] font-medium tracking-[-0.03em]">
+                CodeLens <span className="text-[#777b86]">AI</span>
+              </span>
+            </Link>
+            <p className="mt-4 text-[14px] text-[#777b86]">
+              Explain code. Detect bugs. Improve security.
+            </p>
+          </div>
 
+          <div className="flex flex-wrap gap-6 text-[14px] text-[#4c4c4c]">
+            <a className="transition hover:text-[#17191c]" href="#features">
+              Product
+            </a>
+            <a className="transition hover:text-[#17191c]" href="#how">
+              How it works
+            </a>
+            <Link className="transition hover:text-[#17191c]" to="/analyzer">
+              Analyzer
+            </Link>
+          </div>
+        </div>
 
-  <div className="max-w-7xl mx-auto px-6 lg:px-8 py-14">
-
-    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-
-      <div>
-
-        <h2 className="text-2xl font-bold">
-          <span className="text-blue-400">
-            CodeLens
-          </span>{" "}
-          <span className="text-white">
-            AI
-          </span>
-        </h2>
-
-        <p className="text-slate-400 mt-3">
-          Explain Any Code. Detect Bugs. Improve Security.
-        </p>
-
+        <div className="mt-10 border-t border-black/5 pt-6 text-[12px] text-[#777b86]">
+          © 2026 CodeLens AI. Built with React, FastAPI, Groq.
+        </div>
       </div>
-
-      <div className="flex gap-8 text-slate-400">
-
-        <a href="#features">
-          Features
-        </a>
-
-        <a href="#how">
-          How It Works
-        </a>
-
-        <Link to="/analyzer">
-          Analyzer
-        </Link>
-
-      </div>
-
-    </div>
-
-    <div className="mt-10 border-t border-slate-800 pt-6 text-center text-slate-500">
-      © 2026 CodeLens AI. Built with React, FastAPI, Groq and Monaco Editor.
-    </div>
-
-  </div>
-
-</footer>
-
-
-);
+    </footer>
+  );
 }
